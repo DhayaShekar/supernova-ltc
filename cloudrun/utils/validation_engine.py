@@ -3,9 +3,10 @@
 # Case matching
 # Schema Check
 
-from datetime import datetime
+import datetime
 from utils.postgres_utils import run_insert_query, get_results_query
 from utils.mail_generator import send_mail
+from prettytable import PrettyTable
 
 def special_character_check(source):
     x = ["!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-", "+", "?", "=", "<", ">", "/"]
@@ -64,8 +65,8 @@ def insert_into_validation_table(db, failed, tag):
     RunId = 1
     TenantConfigId = 1
     IsActive = 1
-    CreatedDate = str(datetime.now())
-    UpdatedDate = str(datetime.now())
+    CreatedDate = str(datetime.datetime.now())
+    UpdatedDate = str(datetime.datetime.now())
 
     for each_failure in failed:
         query = f"""
@@ -86,8 +87,8 @@ def insert_into_validation_table(db, failed, tag):
     else:
         RunstatusId = 2
 
-    RunStartDate = str(datetime.now())
-    RunEndDate = str(datetime.now())
+    RunStartDate = str(datetime.datetime.now())
+    RunEndDate = str(datetime.datetime.now())
     run_history_query = f"""
         INSERT INTO snconfig."Run_History" ("RunId", "TenantConfigId" ,"RunStartDate" , "RunstatusId", "RunEndDate") 
         values ({RunId}, {TenantConfigId} , '{RunStartDate}' ,{RunstatusId} , '{RunEndDate}')
@@ -126,7 +127,16 @@ def validate(db, source_metadata, target_metadata):
     results = get_results_query(db, results_query)
 
     mail = "divyan.8726@gmail.com"
-    message = f"Run validation {tag} an results are {results}"
+
+    x = PrettyTable()
+
+    x.field_names = ["TenantName", "TenantType", "ColumnName", "DataType", "OccuringSince"]
+    for r in results:
+        # print(list(r))
+        x.add_row(list(r))
+
+    print(x)
+    message = f"Run validation {tag} and results are \n {x}"
 
     send_mail(mail, message)
 
