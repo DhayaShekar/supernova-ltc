@@ -5,6 +5,7 @@
 
 from datetime import datetime
 from utils.postgres_utils import run_insert_query
+from utils.mail_generator import send_mail
 
 def special_character_check(source):
     x = ["!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-", "+", "?", "=", "<", ">", "/"]
@@ -106,6 +107,10 @@ def validate(db, source_metadata, target_metadata):
     failed, tag = schema_check(source_metadata, target_metadata)
 
     insert_into_validation_table(db, failed, tag)
+    mail = "divyan.8726@gmail.com"
+    message = f"Run validation {tag}"
+
+    send_mail(mail, message)
 
     return failed
 
