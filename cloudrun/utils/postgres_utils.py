@@ -55,3 +55,17 @@ def run_insert_query(db, query):
         # involve retrying or adjusting parameters depending on the situation.
         # [START_EXCLUDE]
         print(f"Exception raised in Run query for {query} : {e}")
+
+
+def get_results_query(db, query):
+    try:
+        with db.connect() as conn:
+            results = conn.execute(sqlalchemy.text(query)).fetchall()
+            return results
+    except Exception as e:
+        # If something goes wrong, handle the error in this section. This might
+        # involve retrying or adjusting parameters depending on the situation.
+        # [START_EXCLUDE]
+        print(f"Exception raised in Run query for {query} : {e}")
+
+    return "None"

@@ -4,7 +4,7 @@
 # Schema Check
 
 from datetime import datetime
-from utils.postgres_utils import run_insert_query
+from utils.postgres_utils import run_insert_query, get_results_query
 from utils.mail_generator import send_mail
 
 def special_character_check(source):
@@ -107,8 +107,26 @@ def validate(db, source_metadata, target_metadata):
     failed, tag = schema_check(source_metadata, target_metadata)
 
     insert_into_validation_table(db, failed, tag)
+
+    results_query = f"""
+    select "TenantName","TenantType","ColumnName","DataType",current_date "OccuringSince" from snconfig."Run_History"
+    left join 
+    snconfig."Validation_Results"
+    on "Run_History"."RunId" = "Validation_Results"."RunId"
+    inner JOIN snconfig."Tenant_Configuration"
+    on "Tenant_Configuration"."ConfigId" = "Validation_Results"."TenantConfigId"
+    inner join snconfig."Tenant_Master"
+    on "Tenant_Master"."TenantId"= "Tenant_Configuration"."TenantId"
+    inner join snconfig."Format_Master"
+    on "Format_Master"."FormatId" = "Tenant_Configuration"."SourceFormatId"
+    inner join snconfig."MetadataSource_Master"
+    on "MetadataSource_Master"."MetadataSourceId" = "Tenant_Configuration"."MetadataSourceId"
+    """
+
+    results = get_results_query(db, results_query)
+
     mail = "divyan.8726@gmail.com"
-    message = f"Run validation {tag}"
+    message = f"Run validation {tag} an results are {results}"
 
     send_mail(mail, message)
 
